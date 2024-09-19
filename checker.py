@@ -4,6 +4,8 @@ from random_point import generate_random_point
 from typing import Any
 import logging
 import sympy
+from typing import *
+
 
 class Checker:
     def __init__(self, function : Function) -> None:
@@ -23,21 +25,21 @@ class Checker:
                 return False
         return True
     
-    def calculate(self, solutions):
+    def calculate(self, solutions) -> int:
         x, y = sympy.symbols('x y')
         values = []
         for solution in solutions:
             val = self.det_
-            val = val.subs(x, solution[0])
-            val = val.subs(y, solution[1])
-            values.append(val.evalf())
+            for i in range(len(self.function_.vars)):
+                val = val.subs(self.function_.vars[i], solution[i])
+            values.append(sympy.N(val, chop=1e-15))
         from itertools import combinations
         ans = sum(map(lambda x : 1/x, values))
         return ans 
 
 
-    def calculate_for_point(self, point = [0,0]):
-        solutions = function.solve(point)
+    def calculate_for_point(self, point = [0,0]) -> int:
+        solutions = self.function_.solve(point)
         return self.calculate(solutions) 
     
     def check_solution(self, solutions) -> bool:
@@ -46,25 +48,25 @@ class Checker:
             self.logger_.error("wrong extension degree!")
         return len(solutions) >= self.function_.degree
     
-    def test_point(self, point = [0,0]) -> CheckResult:
+    def test_point(self, point : list) -> CheckResult:
         self.logger_.info(f"Checking point: {point}")
         solutions = self.function_.solve(point)
         if solutions is None:
             return CheckResult.CONTRACTS
         if not self.check_solution(solutions):
-            self.logger_.info(f"Amount of solutions: {len(solutions)} (expected {self.function_.get_degree()})")
+            self.logger_.info(f"Amount of solutions: {len(solutions)} (expected {self.function_.degree})")
             return CheckResult.NON_GENERAL_POSITION
-        ev = sympy.sympify(self.calculate(solutions))
-        if abs(ev.evalf()) < 0.001:
+        ev = sympy.N(self.calculate(solutions), chop=1e-15)
+        if ev == 0:
             return CheckResult.HOLDS
-        self.logger_.info(f"Test failed! Eval = {ev.evalf()}")
+        self.logger_.info(f"Test failed! Eval = {ev}")
         return CheckResult.NOT_HOLDS 
 
-    def test(self, iterations = 10):
+    def test(self, iterations = 10) -> Tuple[CheckResult, tuple | None]:
         self.logger_.info(f"Checking function: {self.function_}")
         general_position_checks = 0
         while general_position_checks < iterations:
-            point = generate_random_point()
+            point = generate_random_point(len(self.function_.vars))
             result = self.test_point(point)
             self.logger_.info(f"Test result for {point} is: {result.name}")
             if result == CheckResult.CONTRACTS:

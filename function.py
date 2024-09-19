@@ -6,25 +6,22 @@ class Function:
     def __init__(self, polynomials : list[sympy.poly]):
         self.__polynomials = polynomials
         self.__degree = None
-        self.__vars = [f'x_{i}' for i in range(1, len(polynomials) + 1)]
+        self.__vars = sympy.symbols(f'x:{len(polynomials)}')
 
     def __str__(self) -> str:
         answer = ""
-        for i in range(1, len(self.__polynomials) + 1):
-            answer += f'x_{i} -> {self.__polynomials[i]}, '
-        return answer
+        for i in range(0, len(self.__polynomials)):
+            answer += f'{self.__polynomials[i]},'
+        return answer[:-1]
     
     def solve(self, point):
         assert(len(point) == len(self.__polynomials))
 
-        H = list(map(lambda function, coord : f'{function - coord};', zip(self.__polynomials, point)))
+        H = list(map(lambda function, coord : f'{function - coord};', self.__polynomials, point))
         solutions = []
-        try:
-            for solution in phcpy.solver.solve(H, tasks=2, dictionary_output=True):
-                sol = list(map(lambda var, solution = solution : solution[var], self.__vars))
-                solutions.append(sol)
-        except:
-            return None
+        for solution in phcpy.solver.solve(H, tasks=2, dictionary_output=True, precision='d'):
+            sol = tuple(map(lambda var, solution = solution : sympy.N(solution[str(var)], chop=1e-15), self.__vars))
+            solutions.append(sol)
         return list(set(solutions))
     
     def get_jacobian(self) -> sympy.Matrix:
@@ -36,16 +33,18 @@ class Function:
         max_checks = 30
         cur_degree = 0
         while points_checked < max_checks:
-            point = generate_random_point()
+            point = generate_random_point(len(self.vars))
             solutions = self.solve(point)
             if solutions is None:
                 self.contracts_ = True
-                return
             points_checked += 1
             cur_degree = max(cur_degree, len(solutions))
-            if cur_degree >= sympy.total_degree(self.__first) * sympy.total_degree(self.__second):
-                break
         return cur_degree
+    
+    @property
+    def vars(self):
+        return self.__vars
+
     @property
     def degree(self):
         if self.__degree is None:

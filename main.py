@@ -1,4 +1,5 @@
 from function import Function
+from precision import Precision
 from checker import Checker
 from check_info import CheckInfo
 from sympy import parse_expr, N
@@ -11,13 +12,8 @@ class Main:
         func = self.input_function()
         checker = Checker(func)
         tests = 20
-        result, point = checker.test(tests)
+        checker.test(tests)
 
-        value = None
-        if point:
-            value = N(checker.calculate_for_point(point), chop=1e-15)
-        
-        self.function_db_.insert(CheckInfo(func, result, tests, point, value))
 
     @staticmethod
     def input_function() -> Function:
@@ -26,7 +22,13 @@ class Main:
         equations = []
         for i in range(0, n):
             equations.append(input(f'x{i}: '))
-        return Function(list(map(parse_expr, equations)))
+        return Function(list(map(parse_expr, equations)), precision=Precision('d', 1e-15, 30))
+r"""
+    *d*: standard double precision (1e-15),
 
+    *dd*: double double precision (1e-30),
+
+    *qd*: quad double precision (1e-60).
+"""
 main = Main()
 main.run()

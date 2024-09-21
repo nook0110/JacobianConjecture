@@ -31,7 +31,7 @@ class Checker:
             val = self.det_
             for i in range(len(self.function_.vars)):
                 val = val.subs(self.function_.vars[i], solution[i])
-            values.append(sympy.N(val, chop=1e-15))
+            values.append(sympy.N(val, self.function_.get_precision().get_accuracy(), chop=self.function_.get_precision().get_chop()))
         from itertools import combinations
         ans = sum(map(lambda x : 1/x, values))
         return ans 
@@ -54,7 +54,7 @@ class Checker:
         if not self.check_solution(solutions):
             self.logger_.info(f"Amount of solutions: {len(solutions)} (expected {self.function_.degree})")
             return CheckResult.NON_GENERAL_POSITION
-        ev = sympy.N(self.calculate(solutions), chop=1e-15)
+        ev = sympy.N(self.calculate(solutions), self.function_.get_precision().get_accuracy(), chop=self.function_.get_precision().get_chop())
         if ev == 0:
             return CheckResult.HOLDS
         self.logger_.info(f"Test failed! Eval = {ev}")

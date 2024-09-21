@@ -1,12 +1,17 @@
 from random_point import generate_random_point
+from precision import Precision
 import sympy
 import phcpy
 
 class Function:
-    def __init__(self, polynomials : list[sympy.poly]):
+    def __init__(self, polynomials : list[sympy.poly],  precision : Precision):
+        self.__precision = precision
         self.__polynomials = polynomials
         self.__degree = None
         self.__vars = sympy.symbols(f'x:{len(polynomials)}')
+
+    def get_precision(self) -> Precision:
+        return self.__precision
 
     def __str__(self) -> str:
         answer = ""
@@ -19,8 +24,8 @@ class Function:
 
         H = list(map(lambda function, coord : f'{function - coord};', self.__polynomials, point))
         solutions = []
-        for solution in phcpy.solver.solve(H, vrblvl=0, dictionary_output=True, precision='d'):
-            sol = tuple(map(lambda var, solution = solution : sympy.N(solution[str(var)], chop=1e-10), self.__vars))
+        for solution in phcpy.solver.solve(H, vrblvl=0, dictionary_output=True, precision=self.__precision.get_precision()):
+            sol = tuple(map(lambda var, solution = solution : sympy.N(solution[str(var)], self.get_precision().get_accuracy(), chop=self.__precision.get_chop()), self.__vars))
             solutions.append(sol)
         return list(set(solutions))
     

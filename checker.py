@@ -26,7 +26,6 @@ class Checker:
         return True
     
     def calculate(self, solutions) -> int:
-        x, y = sympy.symbols('x y')
         values = []
         for solution in solutions:
             val = self.det_
@@ -44,8 +43,7 @@ class Checker:
     
     def check_solution(self, solutions) -> bool:
         if len(solutions) > self.function_.degree:
-            assert(0)
-            self.logger_.error("wrong extension degree!")
+            self.logger_.error(f"wrong extension degree! expected {self.function_.degree}, but got {len(solutions)}")
         return len(solutions) >= self.function_.degree
     
     def test_point(self, point : list) -> CheckResult:

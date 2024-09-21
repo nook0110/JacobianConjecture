@@ -8,9 +8,8 @@ class Main:
     def __init__(self) -> None:
         self.function_db_ = FunctionDatabase()
         #self.init_sql()
-        pass
 
-    def run(self) -> None:
+    def run(self, precision = 'd') -> None:
         func = self.input_function()
         checker = Checker(func)
         tests = 20

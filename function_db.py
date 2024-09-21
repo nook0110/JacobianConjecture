@@ -17,6 +17,7 @@ class FunctionDatabase:
         return self.mycursor_.fetchall()[0][0]
 
     def insert(self, info : CheckInfo):
+        return
         insert = f'''INSERT INTO {self.table_} (Phi, ExtensionDegree, CheckResult, CheckAmount, Point, Value) VALUES (
         '{info.function_}', 
         {info.function_.degree},

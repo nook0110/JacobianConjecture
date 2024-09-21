@@ -1,6 +1,6 @@
 from random_point import generate_random_point
 import sympy
-import phcpy.solver
+import phcpy
 
 class Function:
     def __init__(self, polynomials : list[sympy.poly]):
@@ -19,8 +19,8 @@ class Function:
 
         H = list(map(lambda function, coord : f'{function - coord};', self.__polynomials, point))
         solutions = []
-        for solution in phcpy.solver.solve(H, tasks=2, dictionary_output=True, precision='d'):
-            sol = tuple(map(lambda var, solution = solution : sympy.N(solution[str(var)], chop=1e-15), self.__vars))
+        for solution in phcpy.solver.solve(H, vrblvl=0, dictionary_output=True, precision='d'):
+            sol = tuple(map(lambda var, solution = solution : sympy.N(solution[str(var)], chop=1e-10), self.__vars))
             solutions.append(sol)
         return list(set(solutions))
     
